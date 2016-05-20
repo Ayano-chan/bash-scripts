@@ -1,0 +1,61 @@
+You can use this command to download a full copy, including images, thumbnails, css, and js, of a 4chan thread.
+It will not download banner images, advertisments, and javascript not hosted on https://s.4cdn.org/.
+It will download a lot of thumbnails.
+If your thread links to another thread then that thread will be downloaded too.
+
+--convert-links
+This is used to convert links in the html to links that look like ordinary paths, for example, https://www.4chan.org/moot/moot.jpg will become ~/www.4chan.org/moot/moot.jpg.
+
+--https-only
+Self-explanatory.
+
+--span-hosts
+To allow links not only from *.4chan.org.
+
+--domains=4chan.org,4cdn.org
+Restrict wget to only include links from *.4chan.org and *.4cdn.org, because you don't want google and whatnot.
+
+--exclude-domains www.4chan.org,s.4cdn.org,i.4cdn.org
+Exclude these (sub)domains from the scope, for whatever reason.
+
+--recursive
+Enable recursive retrieving.
+
+--level=1
+Specify recursion maximum depth level. This does not work as you might expect.
+
+--page-requisites
+This tells wget to download css and js and stuff like that.
+
+--execute robots=off
+Normally wget follows the robots.txt, which forbids 4cdn.org.
+
+--quiet
+What it says.
+
+--wait=1
+This tells wget to wait 1 second between every request. I don't know if 4chan takes measures against mass-downloading but better safe than sorry.
+
+--user-agent="Whatever"
+This is not necessary.
+
+--reject s.jpg,index*,catalog*
+Don't download (or save?) files that end in s.jpg (such as thumbnails) or start with index or catalog.
+Note that this might cause issues if you save threads by name (as in ~/thread/12345/subject-goes-here).
+
+--accept-regex '/$board/|s\.4cdn'
+Basically, only accept URLs (not files, as with --reject) that have either /$board/ in their path or s.4cdn.
+If you want to add more, do it like this: '/$board/|s\.4cdn|more'.
+
+--no-clobber and --timestamping
+Prevent wget from downloading the same file twice.
+What you should realise is that wget does not check for file size, hash, or content of the file, it only looks at the filename.
+In other words, if you save a thread today, and again next week, the images that were added will be downloaded but the thread.html will not be refreshed.
+What you could do, is use -N. Then, wget will ask the server when the file you request has last been modified, and if the the local file has the same timestamp as the server, or a newer one, the remote file will not be re-fetched. However, if the remote file is more recent, wget will proceed to fetch it.
+The disadvantage of this is that the last post in a thread does not necessarily correspond to the last date that a page was modified.
+For example, the /sci/ sticky was last replied to on 21 Dec 2015. However, wget -S will tell us that the last date that page was modified was 24 Apr 2016.
+For some reason wget will not use --no-clobber and --convert-links at the same time, it will prefer --convert-links.
+So, I would recommend to use --timestamping
+
+Full command:
+wget --convert-links --timestamping --https-only --span-hosts --domains=4chan.org,4cdn.org --recursive --level=1 --page-requisites --execute robots=off --quiet --wait=1 --reject index*,catalog* --accept-regex '/$board/|s\.4cdn' $url
